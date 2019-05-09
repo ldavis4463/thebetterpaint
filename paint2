@@ -1,0 +1,114 @@
+# Liam Davis - Period 04
+# Microsoft Paint 2
+# This program allows the user to paint with a variety of colors.
+
+from tkinter import *
+from tkinter.colorchooser import askcolor
+
+
+class Paint:
+
+    # This sets default values.
+    default_pen_size = 5.0
+    default_color = 'black'
+    
+
+    def __init__(self):
+
+        # This creates the initial window.
+        self.window = Tk()
+        self.window.title("Microsoft Paint 2")
+
+        # This creates a canvas for the user to draw on.
+        self.canvas = Canvas(self.window, bg='white', width=750, height=500)
+        self.canvas.grid(row=1, columnspan=5)
+        
+        # This button will allow the user to select a color.
+        self.color_button = Button(self.window, text='Color', command=self.color_panel)
+        self.color_button.grid(row=0, column=1)
+
+        # This slider will control how thick the brush is.
+        self.brush_size = Scale(self.window, from_=1, to=10, orient=HORIZONTAL)
+        self.brush_size.grid(row=0, column=3)
+
+        # This displays the instructions.
+        self.instructions_label = Label(self.window, text='Hold LMB to paint and RMB to erase.')
+        self.instructions_label.grid(row=6, column=2)
+        
+        self.painting()
+        self.window.mainloop()
+        
+
+    def painting(self):
+
+        # X and Y are set to 'None' so that we can use them later
+        self.x, self.y = None, None
+        self.line_width = self.brush_size.get()
+        self.color = self.default_color
+        # When the left mouse is clicked, it paints.
+        self.canvas.bind('<B1-Motion>', self.paint)
+        # When the right mouse is clicked, it erases.
+        self.canvas.bind('<B3-Motion>', self.erase)
+        # When the left mouse is released, it reverts X and Y.
+        self.canvas.bind('<ButtonRelease-1>', self.revert)
+        # When the right mouse is released, it reverts X and Y.
+        self.canvas.bind('<ButtonRelease-3>', self.revert)
+        
+
+    def color_panel(self):
+
+        # This brings up the color panel.
+        self.color = askcolor(color=self.color)[1]
+        
+
+    def paint(self, action):
+
+        # This sets the brush thickness to whatever value is on the scale.
+        self.line_width = self.brush_size.get()
+        
+        # This sets up the brush color.
+        paint_color = self.color
+        
+        # This paints by creating a line where X and Y were to where they are now.
+        if self.x and self.y:
+            self.canvas.create_line(self.x, self.y, action.x, action.y,
+                               width=self.line_width, fill=paint_color,
+                               capstyle=ROUND, smooth=TRUE)
+
+        # This updates X and Y with wherever the user painted.
+        self.x = action.x
+        self.y = action.y
+
+
+    def erase(self, action):
+
+        # This sets the brush width to 10.
+        self.line_width = self.brush_size.get() * 3
+
+        # This sets the paint color to white, "erasing" the paint.
+        paint_color = 'white'
+
+        # This is the same as painting above, just thick and white.
+        if self.x and self.y:
+            self.canvas.create_line(self.x, self.y, action.x, action.y,
+                               width=self.line_width, fill='white',
+                               capstyle=ROUND, smooth=TRUE)
+
+        # This is the same process used above.
+        self.x = action.x
+        self.y = action.y
+
+
+    def revert(self, action):
+
+        '''This reverts both X and Y values back to 'None',
+            allowing it to be updated again'''
+        
+        self.x, self.y = None, None
+           
+
+def main():
+    
+    Paint()
+
+main()
